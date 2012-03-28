@@ -16,11 +16,12 @@
       this.tick = __bind(this.tick, this);
       this.render = __bind(this.render, this);      this.canvas = $('#black')[0];
       this.gl = this.canvas.getContext('experimental-webgl');
+      this.shapes = [];
       this.vertexShader = "attribute vec2 ppos;\n\nuniform vec2 u_resolution;\n\nvoid main() {\n   // convert the rectangle from pixels to 0.0 to 1.0\n   vec2 zeroToOne = ppos / u_resolution;\n\n   // convert from 0->1 to 0->2\n   vec2 zeroToTwo = zeroToOne * 2.0;\n\n   // convert from 0->2 to -1->+1 (clipspace)\n   vec2 clipSpace = zeroToTwo - 1.0;\n\n   gl_Position = vec4(clipSpace, 0, 1);\n}";
     }
 
     Game.prototype.init = function() {
-      var canvas, fshader, program, resolutionLocation, tri, vattrib, vshader;
+      var canvas, fshader, gl, program, resolutionLocation, shapes, tri, vattrib, vshader;
       this.gl.clearColor(0.2, 0.2, 1.0, 1.0);
       fshader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
       this.gl.shaderSource(fshader, 'void main(void) {gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);}');
@@ -61,7 +62,10 @@
         width: 50,
         height: 20
       }, this.canvas);
+      this.shapes.push(this.tri);
       canvas = this.canvas;
+      gl = this.gl;
+      shapes = this.shapes;
       this.canvas.addEventListener('mousemove', function(event) {
         return tri.update({
           x: event.clientX,
@@ -69,13 +73,35 @@
         });
       });
       return this.canvas.addEventListener('mousedown', function(event) {
-        return alert('pew pew');
+        var pew, pew_function;
+        pew = new Triangle(gl, vattrib, {
+          width: 50,
+          height: 20
+        }, canvas);
+        pew.pos = {
+          x: 0,
+          y: 0
+        };
+        shapes.push(pew);
+        return (pew_function = function() {
+          pew.update({
+            x: pew.pos.x,
+            y: pew.pos.y + 5
+          });
+          return setTimeout(pew_function, 100);
+        })();
       });
     };
 
     Game.prototype.render = function() {
+      var s, _i, _len, _ref;
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-      this.tri.render();
+      console.log(this.shapes);
+      _ref = this.shapes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        s = _ref[_i];
+        s.render();
+      }
       return this.gl.flush();
     };
 

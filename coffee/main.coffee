@@ -7,6 +7,7 @@ class Game
   constructor: ->
     @canvas = $('#black')[0]
     @gl = @canvas.getContext('experimental-webgl')
+    @shapes = []
     @vertexShader = """
       attribute vec2 ppos;
 
@@ -66,7 +67,10 @@ class Game
     @gl.uniform2f(resolutionLocation, @canvas.width, @canvas.height)
 
     tri = @tri = new Triangle(@gl, vattrib, {width: 50,height: 20}, @canvas)
+    @shapes.push @tri
     canvas = @canvas
+    gl = @gl
+    shapes = @shapes
 
     @canvas.addEventListener 'mousemove', (event) ->
       tri.update
@@ -74,11 +78,20 @@ class Game
         y: canvas.height-event.clientY
 
     @canvas.addEventListener 'mousedown', (event) ->
-      alert 'pew pew'
+      pew = new Triangle(gl, vattrib, {width: 50,height: 20}, canvas)
+      pew.pos = {x:0, y:0}
+      shapes.push pew
+      do pew_function = ->
+        pew.update
+          x: pew.pos.x
+          y: pew.pos.y + 5
+        setTimeout pew_function, 100
 
   render: =>
     @gl.clear(@gl.COLOR_BUFFER_BIT | @gl.DEPTH_BUFFER_BIT)
-    @tri.render()
+    console.log @shapes
+    for s in @shapes
+      s.render()
     @gl.flush()
 
   tick: =>
